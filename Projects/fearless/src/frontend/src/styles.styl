@@ -86,16 +86,23 @@ body
         padding 1em 
     .convList
         flex-basis 20%
-        @media screen and (max-width 1500px)
+        @media screen and (max-width 800px)
             flex-basis: 100%
     .convCur
         flex-basis 77%
-        @media screen and (max-width 1500px)
+        @media screen and (max-width 800px)
             flex-basis: 100%
         .back
             display none
-            @media screen and (max-width 1500px)
+            @media screen and (max-width 800px)
                 display inline-block
+        .uploadPendingButton
+            width 20px !important
+            height 20px !important
+            display inline-block!important
+            svg
+                width 20px!important
+                height 20px!important
     .mat-list-container
         width 100%
         height calc(100% - 5em)
