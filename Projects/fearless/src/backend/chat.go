@@ -12,8 +12,12 @@ import (
 func sendMessage(w http.ResponseWriter, r *http.Request) {
 	err := createMessageTable()
 	checkErr(err)
+	sessionCur := userSession{}
+	err = sessionCur.getSessionFromRequest(r)
+	checkErr(err)
 	mes := message{}
 	json.NewDecoder(r.Body).Decode(&mes)
+	mes.SenderUserID = sessionCur.userinDB
 	err = mes.send()
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
@@ -26,18 +30,32 @@ func sendMessage(w http.ResponseWriter, r *http.Request) {
 func readMessage(w http.ResponseWriter, r *http.Request) {
 	err := createMessageTable()
 	checkErr(err)
+	sessionCur := userSession{}
+	err = sessionCur.getSessionFromRequest(r)
+	checkErr(err)
 	mes := message{}
 	json.NewDecoder(r.Body).Decode(&mes)
-	err = mes.read()
-	checkErr(err)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{"status": "success"})
+	if mes.TargetID == sessionCur.userinDB {
+		err = mes.read()
+		checkErr(err)
+		json.NewEncoder(w).Encode(map[string]interface{}{"status": "success"})
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{"status": "error", "statusText": "you're not the user"})
+	}
 }
 
 func recallMessage(w http.ResponseWriter, r *http.Request) {
 	mes := message{}
 	json.NewDecoder(r.Body).Decode(&mes)
-	err := mes.recall()
+	sessionCur := userSession{}
+	err := sessionCur.getSessionFromRequest(r)
+	checkErr(err)
+	if mes.SenderUserID == sessionCur.userinDB {
+		err = mes.recall()
+	} else {
+		err = fmt.Errorf(`you are not the user`)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"status": "error", "errorText": err.Error()})
@@ -49,7 +67,14 @@ func recallMessage(w http.ResponseWriter, r *http.Request) {
 func editMessage(w http.ResponseWriter, r *http.Request) {
 	mes := message{}
 	json.NewDecoder(r.Body).Decode(&mes)
-	err := mes.edit()
+	sessionCur := userSession{}
+	err := sessionCur.getSessionFromRequest(r)
+	checkErr(err)
+	if mes.SenderUserID == sessionCur.userinDB {
+		err = mes.edit()
+	} else {
+		err = fmt.Errorf(`you are not the user`)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"status": "error", "errorText": err.Error()})
@@ -64,10 +89,17 @@ func readConversation(w http.ResponseWriter, r *http.Request) {
 	checkErr(err)
 	conv := conversation{}
 	json.NewDecoder(r.Body).Decode(&conv)
-	conv.SenderUserID = session.userinDB
-	conv.read()
+	if conv.SenderUserID == session.userinDB {
+		conv.read()
+	} else {
+		err = fmt.Errorf(`you are not the user`)
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{"status": "success"})
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"status": "error", "errorText": err.Error()})
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{"status": "success"})
+	}
 }
 
 func conversationUpdate(w http.ResponseWriter, r *http.Request) {

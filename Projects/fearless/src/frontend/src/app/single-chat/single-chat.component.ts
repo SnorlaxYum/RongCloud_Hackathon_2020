@@ -93,20 +93,35 @@ export class SingleChatComponent implements OnInit {
       this.finalSelfInfo = info
       this.userRongAuth$.subscribe(res => {
         if (!res) {
-          var things = this.rongSer.rongInit(info), that = this
-          things[0].then(function(user) {
+          var that = this
+          this.rongSer.rongInit(info)
+          this.rongSer.im.connect(info).then(function(user) {
             console.log('链接成功, 链接用户 id 为: ', user.id)
             that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
-            window['rongIm'] = things[1]
-            console.log('获取会话列表成功', that.rongSer.conversationList);
+            console.log('获取会话列表成功', that.rongSer.conversationList)
             that.getCurMessages()
           }).catch(function(error) {
             console.log('链接失败: ', error.code, error.msg);
             that.getCurMessages()
           })
         } else {
-          console.log('获取会话列表成功', this.rongSer.conversationList);
-          this.getCurMessages()
+            if (this.accSer.loggedOut) {
+              var that = this
+              this.rongSer.rongInit(info)
+              this.rongSer.im.connect(info).then(function(user) {
+                console.log('链接成功, 链接用户 id 为: ', user.id)
+                that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
+                console.log('获取会话列表成功', that.rongSer.conversationList)
+                that.getCurMessages()
+                that.accSer.loggedOut = false
+              }).catch(function(error) {
+                console.log('链接失败: ', error.code, error.msg)
+                that.getCurMessages()
+              })
+            } else {
+              console.log('获取会话列表成功', this.rongSer.conversationList)
+              this.getCurMessages()
+            }
         }
       })
     })
@@ -147,8 +162,8 @@ export class SingleChatComponent implements OnInit {
           }
         }
         function connect(callback) {
-          var things = that.rongSer.rongInit(that.finalSelfInfo)
-          things[0].then(function(user) {
+          that.rongSer.rongInit(that.finalSelfInfo)
+          that.rongSer.im.connect(that.finalSelfInfo).then(function(user) {
             console.log('链接成功, 链接用户 id 为: ', user.id)
             that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
             callback()

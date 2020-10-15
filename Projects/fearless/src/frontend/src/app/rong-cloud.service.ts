@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 export class RongCloudService {
   conversationList = []
   finalTargetInfos = []
+  newMes = []
   watched: boolean
   im: any
 
@@ -23,11 +24,11 @@ export class RongCloudService {
         that.finalTargetInfos = res['targetInfos']
         if (!that.watched) {
           that.watch(im)
+          that.watched = true
         }
       }
     })
     this.im = im
-    return [im.connect(finalUserInfo), im]
     // .then(function(user) {
     //   console.log('链接成功, 链接用户 id 为: ', user.id)
     //   that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
@@ -99,6 +100,14 @@ export class RongCloudService {
               updatedConversationList
             })
             console.log('最新会话列表:', that.conversationList);
+            if (that.newMes.length) {
+              const notifyList = [...that.newMes]
+              for (let message of notifyList) {
+                console.log(message)
+                that.notify(that.finalTargetInfos[message.targetId]['nickname'], message.content)
+              }
+              that.newMes = []
+            }
           }
         })
         
@@ -106,6 +115,7 @@ export class RongCloudService {
       message: function(event){
         var message = event.message;
         console.log('收到新消息:', message);
+        that.newMes.push(event.message)
       },
       status: function(event){
         var status = event.status;
@@ -143,6 +153,28 @@ export class RongCloudService {
         */
       }
     })
+  }
+
+  notify(user: string, message: any) {
+    if (!("Notification" in window)) {
+      alert("This browser does not support desktop notification");
+    }
+  
+    // Let's check whether notification permissions have already been granted
+    else if (Notification.permission === "granted") {
+      // If it's okay let's create a notification
+      var notification = new Notification(user, {body: message.content})
+    }
+  
+    // Otherwise, we need to ask the user for permission
+    else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(function (permission) {
+        // If the user accepts, let's create a notification
+        if (permission === "granted") {
+          var notification = new Notification(user, {body: message.content})
+        }
+      });
+    }
   }
 
   constructor(private store: Store, private http: HttpClient) { }

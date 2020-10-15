@@ -8,6 +8,8 @@ import { Observable } from 'rxjs';
 })
 export class AcccountManagementService {
   // apiUrl = 'http://localhost:8081'
+  loggedOut: boolean
+
   login(option: userManagementForm): Observable<any> {
     return this.http.post('/api/login', option)
   }
@@ -41,6 +43,7 @@ export class AcccountManagementService {
   }
 
   logOut(): Observable<any> {
+    this.loggedOut = true
     return this.http.get('/api/logout')
   }
 
