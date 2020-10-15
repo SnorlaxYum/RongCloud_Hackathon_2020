@@ -34,6 +34,18 @@ export class LoginComponent implements OnInit {
     this.accSer.login(this.loginForm.value).subscribe(res => {
       if (res.status == "success") {
         that.router.navigateByUrl("")
+      } else {
+        switch (res.statusText) {
+          case 'password not matched':
+            this.appRef.components[0].instance.openSnackBar('密码错误')
+            break
+          case 'no corresponding user found':
+            this.appRef.components[0].instance.openSnackBar('找不到用户')
+            break
+          default:
+            this.appRef.components[0].instance.openSnackBar(res.statusText)
+            break
+        }
       }
     })
   }

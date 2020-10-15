@@ -6,6 +6,7 @@ import { Observable, from } from 'rxjs'
 import { userInfo } from './data'
 import { Title } from '@angular/platform-browser'
 import { FormGroup } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-root',
@@ -27,7 +28,7 @@ export class AppComponent {
   userRongAuth: boolean
   userRongAuth$: Observable<boolean> = this.store.select(state => state['userRongAuth'])
 
-  constructor(private accSer: AcccountManagementService, private router: Router, private route: ActivatedRoute, private store: Store, private titleSer: Title) { 
+  constructor(private accSer: AcccountManagementService, private router: Router, private route: ActivatedRoute, private store: Store, private titleSer: Title, public snackbar: MatSnackBar) { 
     router.events.subscribe(event => {
       if (event['routerEvent']) {
         if (!(event['routerEvent']['url'].search('/register')+1)) {
@@ -116,5 +117,11 @@ export class AppComponent {
 
 
   ngOnInit() {
+  }
+
+  openSnackBar(message: string, action?: string) {
+    this.snackbar.open(message, action ? action : "确认", {
+      duration: 2000,
+    });
   }
 }
