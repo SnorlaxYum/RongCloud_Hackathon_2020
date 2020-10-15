@@ -50,9 +50,9 @@ export class SingleChatComponent implements OnInit {
 
   getTargetInfo = (userId: string) => this.rongSer.finalTargetInfos && this.rongSer.finalTargetInfos[userId] ? this.rongSer.finalTargetInfos[userId] : this.route.params['_value']['chat'] == userId ? {userId: this.route.params['_value']['chat'], nickname: this.route.params['_value']['chatnick'], portraitUri: this.route.params['_value']['chatpor'], relation: this.route.params['_value']['chatrel']} : {}
 
-  avatarUriVar = (uri: string) => uri.startsWith('http://') || uri.startsWith('https://') ? uri : '/assets/IM-icon.png'
+  avatarUriVar = (uri: string) => uri && uri.length ? uri.startsWith('http://') || uri.startsWith('https://') ? uri : '/assets/IM-icon.png' : '/assets/IM-icon.png'
 
-  getAvatarUri = (userId: string) => userId == this.finalSelfInfo.userID ? this.avatarUriVar(this.finalSelfInfo.portraitUri) : this.avatarUriVar(this.getTargetInfo(userId).portraitUri)
+  getAvatarUri = (userId: string) => userId == this.finalSelfInfo.userID ? this.avatarUriVar(this.finalSelfInfo.portraitUri) : this.getTargetInfo(userId) ? this.avatarUriVar(this.getTargetInfo(userId).portraitUri) : this.avatarUriVar('')
 
   selfInfo = () => this.finalSelfInfo
 
