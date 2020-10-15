@@ -40,7 +40,7 @@
                 <mat-card-header>
                   <div mat-card-avatar [style]="'background-image: url(' + getAvatarUri(message.SenderUserID) + '); background-size: 100% auto;'">
                   </div>
-                  <mat-card-title>{{message.SenderUserID == selfInfo()['userID'] ? selfInfo()['nickname'] : getTargetInfo(message.SenderUserID).nickname}}</mat-card-title>
+                  <mat-card-title><a  [routerLink]="['/userList', message.SenderUserID]">{{message.SenderUserID == selfInfo()['userID'] ? selfInfo()['nickname'] : getTargetInfo(message.SenderUserID).nickname}}</a></mat-card-title>
                   <mat-card-subtitle>{{timeclock(message.SentTime)}}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>

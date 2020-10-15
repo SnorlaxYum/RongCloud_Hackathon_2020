@@ -8,7 +8,7 @@ import { ErrorStateMatcher } from '@angular/material/core'
 import { AcccountManagementService } from '../account-management.service'
 import { userInfo, conversation, message } from '../data'
 import RongIMLib from '../RongIMLib-3.0.7-dev.es.js'
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, throwMatDialogContentAlreadyAttachedError } from '@angular/material/dialog';
 import { UploadFileComponent } from '../upload-file/upload-file.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -88,6 +88,7 @@ export class SingleChatComponent implements OnInit {
     }
     if (this.route.params['_value']['chat']) {
       this.currentCon['targetId'] = this.route.params['_value']['chat']
+      this.rongSer.finalTargetInfos[this.route.params['_value']['chat']]['relation'] = this.route.params['_value']['chatrel']
     }
     this.finalUserInfo().then(info => {
       this.finalSelfInfo = info
@@ -107,16 +108,18 @@ export class SingleChatComponent implements OnInit {
         } else {
             if (this.accSer.loggedOut) {
               var that = this
-              this.rongSer.rongInit(info)
-              this.rongSer.im.connect(info).then(function(user) {
-                console.log('链接成功, 链接用户 id 为: ', user.id)
-                that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
-                console.log('获取会话列表成功', that.rongSer.conversationList)
-                that.getCurMessages()
-                that.accSer.loggedOut = false
-              }).catch(function(error) {
-                console.log('链接失败: ', error.code, error.msg)
-                that.getCurMessages()
+              this.rongSer.im.disconnect().then(() => {
+                this.rongSer.rongInit(info)
+                this.rongSer.im.connect(info).then(function(user) {
+                  console.log('链接成功, 链接用户 id 为: ', user.id)
+                  that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
+                  console.log('获取会话列表成功', that.rongSer.conversationList)
+                  that.getCurMessages()
+                  that.accSer.loggedOut = false
+                }).catch(function(error) {
+                  console.log('链接失败: ', error.code, error.msg)
+                  that.getCurMessages()
+                })
               })
             } else {
               console.log('获取会话列表成功', this.rongSer.conversationList)
