@@ -474,7 +474,7 @@ func (con *conversation) update() error {
 		_, err = db.Exec(`INSERT INTO conversation (SenderUserID, LatestMessage, UnreadMessageCount, HasMentiond, MentiondInfo, LastUnreadTime, NotificationStatus, IsTop, Type, TargetID, HasMentioned, MentionedInfo, UpdateTime) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);`, con.TargetID, latestMes, con.UnreadMessageCount, con.HasMentiond, mentiondInfo, con.LastUnreadTime, con.NotificationStatus, con.IsTop, con.Type, con.SenderUserID, con.HasMentioned, mentionedInfo, con.LatestMessage.ReceivedTime)
 	} else {
 		// UPDATE
-		_, err = db.Exec(`UPDATE conversation SET UnreadMessageCount=$1, HasMentiond=$2, MentiondInfo=$3, LastUnreadTime=$4, NotificationStatus=$5, IsTop=$6, Type=$7, HasMentioned=$8, MentionedInfo=$9, LatestMessage=$10, UpdateTime=$11 WHERE id =$12;`, con.UnreadMessageCount, con.HasMentiond, mentiondInfo, con.LastUnreadTime, con.NotificationStatus, con.IsTop, con.Type, con.HasMentioned, mentionedInfo, latestMes, con.LatestMessage.ReceivedTime, conQuery2.ID)
+		_, err = db.Exec(`UPDATE conversation SET LatestMessage=$1, UpdateTime=$2 WHERE id =$3;`, latestMes, con.LatestMessage.ReceivedTime, conQuery2.ID)
 	}
 	return err
 }
