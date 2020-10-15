@@ -1,5 +1,5 @@
 <div class="chat-window">
-    <div class="convList" [hidden]="currentScreen == 'con'">
+    <div class="convList" [hidden]="rongSer.currentScreen == 'con'">
         <div class="header">对话列表</div>
         <div class="mat-list-container">
         <mat-list>
@@ -18,7 +18,7 @@
         </mat-list>     
         </div>
     </div>
-    <div class="convCur" [hidden]="currentScreen == 'list'">
+    <div class="convCur" [hidden]="rongSer.currentScreen == 'list'">
         <div class="header">
             <button class="back" (click)="backToList()" mat-icon-button>
                 <mat-icon>keyboard_backspace</mat-icon>
@@ -55,7 +55,7 @@
             </ng-template>            
         </div>
         <div>
-            <mat-spinner class="uploadPendingButton" *ngIf="uploading else upButton"></mat-spinner>
+            <mat-spinner class="uploadPendingButton" *ngIf="rongSer.uploading else upButton"></mat-spinner>
             <ng-template #upButton>
                 <button mat-icon-button (click)="uploadPic()">
                     <mat-icon>insert_photo</mat-icon>
@@ -63,7 +63,7 @@
             </ng-template>
             <form [formGroup]="messageForm" (ngSubmit)="onSub()" class="messageForm" (keydown)="keyDownForm($event)">
                 <mat-form-field>
-                    <mat-label *ngIf="editToggle else enterField">编辑消息（Ctrl+Enter发送，支持Markdown）</mat-label>
+                    <mat-label *ngIf="rongSer.editToggle else enterField">编辑消息（Ctrl+Enter发送，支持Markdown）</mat-label>
                     <ng-template #enterField>
                         <mat-label>输入消息（Ctrl+Enter发送，支持Markdown）</mat-label>
                     </ng-template>

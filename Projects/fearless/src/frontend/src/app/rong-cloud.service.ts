@@ -3,6 +3,7 @@ import RongIMLib from './RongIMLib-3.0.7-dev.es.js'
 import { Store } from '@ngrx/store'
 import { userInfo, conversation, message } from './data'
 import { HttpClient } from '@angular/common/http';
+import { FormBuilder } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,13 @@ export class RongCloudService {
   }
   currentConMessages = []
   notInit = {}
+  picNum: number = 0
+  currentScreen: string = 'both'
+  uploading: boolean
+  editToggle: any
+  messageForm = this.fb.group({
+    message: this.fb.control('')
+  })
 
   rongInit(finalUserInfo: userInfo) {
     const rongConfig = {
@@ -77,7 +85,11 @@ export class RongCloudService {
       this.getConversationMessages({targetId: this.currentCon['targetId']}).subscribe(res => {
         new Promise(resolve => {
           that.currentConMessages = res['messages']
-          resolve(that.currentConMessages.reverse())
+          if (that.currentConMessages){
+            resolve(that.currentConMessages.reverse())
+          } else {
+            resolve(that.currentConMessages)
+          }
         }).then(() => {
           setTimeout(() => {
             if (!this.notInit[this.currentCon['targetId']] && document.getElementById('unReadSep')) {
@@ -204,5 +216,5 @@ export class RongCloudService {
     }
   }
 
-  constructor(private store: Store, private http: HttpClient) { }
+  constructor(private store: Store, private http: HttpClient, private fb: FormBuilder) { }
 }

@@ -1,14 +1,12 @@
 import { Component, OnInit, ApplicationRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router'
-import { FormBuilder, Validators, FormControl, FormGroup, FormGroupDirective, NgForm } from '@angular/forms'
 import { Store } from '@ngrx/store'
 import { Observable, from } from 'rxjs'
 import { RongCloudService } from '../rong-cloud.service'
-import { ErrorStateMatcher } from '@angular/material/core'
 import { AcccountManagementService } from '../account-management.service'
-import { userInfo, conversation, message } from '../data'
+import { userInfo, message } from '../data'
 import RongIMLib from '../RongIMLib-3.0.7-dev.es.js'
-import { MatDialog, throwMatDialogContentAlreadyAttachedError } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { UploadFileComponent } from '../upload-file/upload-file.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -28,7 +26,6 @@ export class SingleChatComponent implements OnInit {
     portraitUri: '',
     token: ''
   }
-  editToggle: any
   unreadFirst: any
   userRongAuth: boolean
   userRongAuth$: Observable<boolean> = this.store.select(state => state['userRongAuth'])
@@ -36,17 +33,10 @@ export class SingleChatComponent implements OnInit {
   rongConfig = {
     appkey: 'sfci50a7sx2ri',
   }
-  conveInput: string
   // im = RongIMLib.init(this.rongConfig)
-  messageForm = this.fb.group({
-    message: this.fb.control('')
-  })
-  picNum: number = 0
-  currentScreen: string = 'both'
-  uploading: boolean
-  init = true
+  messageForm = this.rongSer.messageForm
 
-  constructor(private route: ActivatedRoute, private router: Router, private accSer: AcccountManagementService, public rongSer: RongCloudService, private fb: FormBuilder, private store: Store, private appRef: ApplicationRef, private snackbar: MatSnackBar, public dialog: MatDialog) { }
+  constructor(private route: ActivatedRoute, private router: Router, private accSer: AcccountManagementService, public rongSer: RongCloudService, private store: Store, private appRef: ApplicationRef, private snackbar: MatSnackBar, public dialog: MatDialog) { }
 
   getTargetInfo = (userId: string) => this.rongSer.finalTargetInfos && this.rongSer.finalTargetInfos[userId] ? this.rongSer.finalTargetInfos[userId] : this.route.params['_value']['chat'] == userId ? {userId: this.route.params['_value']['chat'], nickname: this.route.params['_value']['chatnick'], portraitUri: this.route.params['_value']['chatpor'], relation: this.route.params['_value']['chatrel']} : {}
 
@@ -58,8 +48,8 @@ export class SingleChatComponent implements OnInit {
 
   ngOnInit() {
     this.appRef.components[0].instance.setTitle('聊天')
-    if (screen.width <= 800) {
-      this.currentScreen = this.route.params['_value']['chat'] ? 'con' : 'list'
+    if (screen.width <= 800 && this.rongSer.currentScreen == 'both') {
+      this.rongSer.currentScreen = this.route.params['_value']['chat'] ? 'con' : 'list'
     }
     if (this.route.params['_value']['chat']) {
       this.rongSer.currentCon['targetId'] = this.route.params['_value']['chat']
@@ -106,8 +96,8 @@ export class SingleChatComponent implements OnInit {
   }
   onSub() { 
     if (this.messageForm.value['message'].length) {
-      if (this.editToggle) {
-        this.editMessage({...this.editToggle, Content: {Content: this.messageForm.value['message']}})
+      if (this.rongSer.editToggle) {
+        this.editMessage({...this.rongSer.editToggle, Content: {Content: this.messageForm.value['message']}})
       } else {
         var that = this
         function send(onerr) {
@@ -124,7 +114,7 @@ export class SingleChatComponent implements OnInit {
                 if (res['status'] == 'success') {
                   that.openSnackBar("信息发送成功")
                   console.log("信息发送成功，", message)
-                  that.picNum = 0
+                  that.rongSer.picNum = 0
                   that.rongSer.getCurMessages()
 
                   that.messageForm.reset({message: ''})
@@ -160,7 +150,7 @@ export class SingleChatComponent implements OnInit {
   }
 
   uploadPic = () => {
-    if (!this.picNum) {
+    if (!this.rongSer.picNum) {
       const dialogRef = this.dialog.open(UploadFileComponent, {
         width: 'auto',
         data: {title: '上传消息图片（限一张）'}
@@ -169,20 +159,20 @@ export class SingleChatComponent implements OnInit {
       dialogRef.afterClosed().subscribe(res => {
         if (res) {
           if (res[0].type.startsWith('image/')) {
-            this.uploading = true
+            this.rongSer.uploading = true
             this.accSer.uploadFile(res).subscribe(result => {
               if (result['status']) {
                 switch (result['status']) {
                   case 'success':
                     this.openSnackBar('上传成功')
-                    this.picNum++
+                    this.rongSer.picNum++
                     this.messageForm.setValue({message: this.messageForm.value['message'].length ? `${this.messageForm.value['message']}  \n![](/api/uploads/${result['filePath']})` : `![](/api/uploads/${result['filePath']})`})
                     break
                   default:
                     this.openSnackBar('上传失败')
                     break
                 }
-                this.uploading = false
+                this.rongSer.uploading = false
               }
             })
           } else {
@@ -230,13 +220,13 @@ export class SingleChatComponent implements OnInit {
     this.rongSer.currentCon = this.rongSer.conversationList[i]
     this.rongSer.read(this.rongSer.currentCon)
     if (screen.width <= 800) {
-      this.currentScreen = 'con'
+      this.rongSer.currentScreen = 'con'
     }
     this.rongSer.getCurMessages()
   }
 
   backToList() {
-    this.currentScreen = 'list'
+    this.rongSer.currentScreen = 'list'
   }
 
   keyDownForm(e: Event) {
@@ -271,14 +261,14 @@ export class SingleChatComponent implements OnInit {
 
   editTrigger(mes: any) {
     this.messageForm.setValue({message: mes.Content.Content})
-    this.editToggle = mes
+    this.rongSer.editToggle = mes
   }
 
   editMessage(mes: message) {
     this.rongSer.editMessage(mes).subscribe(res => {
       if (res['status'] == 'success') {
         console.log("编辑成功")
-        this.editToggle = false
+        this.rongSer.editToggle = false
         this.messageForm.reset({message: ''})
         this.messageForm.markAsPristine()
         this.messageForm.markAsUntouched()
