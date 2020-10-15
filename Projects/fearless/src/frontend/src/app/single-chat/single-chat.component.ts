@@ -12,13 +12,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { UploadFileComponent } from '../upload-file/upload-file.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-class MyErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
-    const isSubmitted = form && form.submitted;
-    return (control && control.invalid);
-  }
-}
-
 declare global {
   interface Window { rongIm: any; }
 }
@@ -51,9 +44,8 @@ export class SingleChatComponent implements OnInit {
   }
   currentConMessages = []
   messageForm = this.fb.group({
-    message: this.fb.control('', [Validators.required])
+    message: this.fb.control('')
   })
-  matcher = new MyErrorStateMatcher()
   picNum: number
   currentScreen: string = 'both'
 
@@ -119,53 +111,57 @@ export class SingleChatComponent implements OnInit {
     })
   }
   onSub() { 
-    if (this.editToggle) {
-      this.editMessage({...this.editToggle, Content: {Content: this.messageForm.value['message']}})
-    } else {
-      var that = this
-      function send(onerr) {
-        var conversation = that.rongSer.im.Conversation.get({
-          targetId: that.currentCon['targetId'],
-          type: RongIMLib.CONVERSATION_TYPE.PRIVATE
-        });
-        if ((that.rongSer.finalTargetInfos && that.rongSer.finalTargetInfos[that.currentCon['targetId']] && that.rongSer.finalTargetInfos[that.currentCon['targetId']]['relation'] == 1) || that.getTargetInfo(that.currentCon['targetId'])['relation'] == 1) {
-          conversation.send({
-            messageType: 's:person',
-            content: {content: that.messageForm.value['message']}
-          }).then(message => {
-            that.rongSer.sendMessage(message).subscribe(res => {
-              if (res['status'] == 'success') {
-                that.openSnackBar("信息发送成功")
-                console.log("信息发送成功，", message)
-                that.picNum = 0
-                that.getCurMessages()
+    if (this.messageForm.value['message'].length) {
+      if (this.editToggle) {
+        this.editMessage({...this.editToggle, Content: {Content: this.messageForm.value['message']}})
+      } else {
+        var that = this
+        function send(onerr) {
+          var conversation = that.rongSer.im.Conversation.get({
+            targetId: that.currentCon['targetId'],
+            type: RongIMLib.CONVERSATION_TYPE.PRIVATE
+          });
+          if ((that.rongSer.finalTargetInfos && that.rongSer.finalTargetInfos[that.currentCon['targetId']] && that.rongSer.finalTargetInfos[that.currentCon['targetId']]['relation'] == 1) || that.getTargetInfo(that.currentCon['targetId'])['relation'] == 1) {
+            conversation.send({
+              messageType: 's:person',
+              content: {content: that.messageForm.value['message']}
+            }).then(message => {
+              that.rongSer.sendMessage(message).subscribe(res => {
+                if (res['status'] == 'success') {
+                  that.openSnackBar("信息发送成功")
+                  console.log("信息发送成功，", message)
+                  that.picNum = 0
+                  that.getCurMessages()
 
-                that.messageForm.reset({message: ''})
-                that.messageForm.markAsPristine()
-                that.messageForm.markAsUntouched()
-              }
+                  that.messageForm.reset({message: ''})
+                  that.messageForm.markAsPristine()
+                  that.messageForm.markAsUntouched()
+                }
+              })
+            }, err => {
+              onerr(err)
             })
-          }, err => {
-            onerr(err)
-          })
-        } else {
-          that.openSnackBar("你们还不是朋友")
+          } else {
+            that.openSnackBar("你们还不是朋友")
+          }
         }
+        function connect(callback) {
+          var things = that.rongSer.rongInit(that.finalSelfInfo)
+          things[0].then(function(user) {
+            console.log('链接成功, 链接用户 id 为: ', user.id)
+            that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
+            callback()
+          }).catch(function(error) {
+            console.log('链接失败: ', error.code, error.msg);
+          })
+        }
+          send((err) => {
+            console.error(err)
+            connect(() => send(err => console.error(err)))
+          })
       }
-      function connect(callback) {
-        var things = that.rongSer.rongInit(that.finalSelfInfo)
-        things[0].then(function(user) {
-          console.log('链接成功, 链接用户 id 为: ', user.id)
-          that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
-          callback()
-        }).catch(function(error) {
-          console.log('链接失败: ', error.code, error.msg);
-        })
-      }
-        send((err) => {
-          console.error(err)
-          connect(() => send(err => console.error(err)))
-        })
+    } else {
+      this.openSnackBar("请输入信息")
     }
   }
 

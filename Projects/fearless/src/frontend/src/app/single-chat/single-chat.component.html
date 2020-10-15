@@ -64,7 +64,7 @@
                     <ng-template #enterField>
                         <mat-label>输入消息（Ctrl+Enter发送，支持Markdown）</mat-label>
                     </ng-template>
-                    <textarea formControlName="message" type="text" [errorStateMatcher]="matcher" matInput></textarea>
+                    <textarea formControlName="message" type="text" matInput></textarea>
                     <button type="submit" [disabled]="!messageForm.valid || !currentCon" mat-raised-button color="primary">发送</button>
                 </mat-form-field>
             </form>
