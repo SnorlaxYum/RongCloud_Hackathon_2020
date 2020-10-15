@@ -4,7 +4,8 @@ import { AcccountManagementService } from '../account-management.service';
 
 interface FileForm {
   file: any
-  result: any
+  result: any,
+  title: any
 }
 
 @Component({

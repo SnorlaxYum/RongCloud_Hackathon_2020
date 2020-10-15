@@ -175,22 +175,26 @@ export class SingleChatComponent implements OnInit {
 
       dialogRef.afterClosed().subscribe(res => {
         if (res) {
-          this.uploading = true
-          this.accSer.uploadFile(res).subscribe(result => {
-            if (result['status']) {
-              switch (result['status']) {
-                case 'success':
-                  this.openSnackBar('上传成功')
-                  this.picNum++
-                  this.messageForm.setValue({message: this.messageForm.value['message'].length ? `${this.messageForm.value['message']}  \n![](/api/uploads/${result['filePath']})` : `![](/api/uploads/${result['filePath']})`})
-                  break
-                default:
-                  this.openSnackBar('上传失败')
-                  break
+          if (res[0].type.startsWith('image/')) {
+            this.uploading = true
+            this.accSer.uploadFile(res).subscribe(result => {
+              if (result['status']) {
+                switch (result['status']) {
+                  case 'success':
+                    this.openSnackBar('上传成功')
+                    this.picNum++
+                    this.messageForm.setValue({message: this.messageForm.value['message'].length ? `${this.messageForm.value['message']}  \n![](/api/uploads/${result['filePath']})` : `![](/api/uploads/${result['filePath']})`})
+                    break
+                  default:
+                    this.openSnackBar('上传失败')
+                    break
+                }
+                this.uploading = false
               }
-              this.uploading = false
-            }
-          })
+            })
+          } else {
+            this.openSnackBar('必需得是图片')
+          }
         }
       })
     } else {

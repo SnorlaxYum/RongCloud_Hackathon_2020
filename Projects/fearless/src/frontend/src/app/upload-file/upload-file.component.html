@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>上传文件</h1>
+<h1 mat-dialog-title>{{data.title || '上传文件'}}</h1>
 <div mat-dialog-content>
     <input type="file" [value]="data.file" accept="image-*" (input)="valueChange($event)">
 </div>
