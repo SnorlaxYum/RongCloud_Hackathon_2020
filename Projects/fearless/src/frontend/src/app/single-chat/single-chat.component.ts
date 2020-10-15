@@ -90,7 +90,7 @@ export class SingleChatComponent implements OnInit {
     }
     if (this.route.params['_value']['chat']) {
       this.currentCon['targetId'] = this.route.params['_value']['chat']
-      this.rongSer.finalTargetInfos[this.route.params['_value']['chat']]['relation'] = this.route.params['_value']['chatrel']
+      this.rongSer.finalTargetInfos[this.route.params['_value']['chat']] = {userId: this.route.params['_value']['chat'], nickname: this.route.params['_value']['chatnick'], portraitUri: this.route.params['_value']['chatpor'], relation: this.route.params['_value']['chatrel']}
     }
     this.finalUserInfo().then(info => {
       this.finalSelfInfo = info
