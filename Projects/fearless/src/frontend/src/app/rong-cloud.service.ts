@@ -13,6 +13,11 @@ export class RongCloudService {
   newMes = []
   watched: boolean
   im: any
+  currentCon: conversation = {
+    targetId: ''
+  }
+  currentConMessages = []
+  notInit = {}
 
   rongInit(finalUserInfo: userInfo) {
     const rongConfig = {
@@ -64,6 +69,28 @@ export class RongCloudService {
 
   readConversation(conv: conversation) {
     return this.http.post('/api/readConversation', conv)
+  }
+
+  getCurMessages() {
+    var that = this
+    if (this.currentCon['targetId'] && this.currentCon['targetId'].length) {
+      this.getConversationMessages({targetId: this.currentCon['targetId']}).subscribe(res => {
+        new Promise(resolve => {
+          that.currentConMessages = res['messages']
+          resolve(that.currentConMessages.reverse())
+        }).then(() => {
+          setTimeout(() => {
+            if (!this.notInit[this.currentCon['targetId']] && document.getElementById('unReadSep')) {
+              document.querySelector('.conversationList').scrollTop = document.getElementById('unReadSep').scrollHeight
+              this.notInit = false
+            } else {
+              document.querySelector('.conversationList').scrollTop = document.querySelector('.conversationList').scrollHeight
+            }
+          }, 100)
+        })
+        
+      })
+    }
   }
 
   read(conv: conversation) {

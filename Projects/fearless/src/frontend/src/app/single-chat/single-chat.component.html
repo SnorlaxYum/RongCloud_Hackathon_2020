@@ -23,9 +23,9 @@
             <button class="back" (click)="backToList()" mat-icon-button>
                 <mat-icon>keyboard_backspace</mat-icon>
             </button>
-            {{currentCon && currentCon.targetId && currentCon.targetId.length ? '与'+getTargetInfo(currentCon.targetId).nickname+'的对话' : '对话'}}</div>
+            {{rongSer.currentCon && rongSer.currentCon.targetId && rongSer.currentCon.targetId.length ? '与'+getTargetInfo(rongSer.currentCon.targetId).nickname+'的对话' : '对话'}}</div>
         <div class="conversationList">
-            <ng-template *ngIf="currentConMessages" ngFor let-message [ngForOf]="currentConMessages">
+            <ng-template *ngIf="rongSer.currentConMessages" ngFor let-message [ngForOf]="rongSer.currentConMessages">
               <ng-template [ngIf]="unreadLineStatus(message)">
                 <mat-card id="unReadSep">
                     <mat-card-content>
@@ -68,7 +68,7 @@
                         <mat-label>输入消息（Ctrl+Enter发送，支持Markdown）</mat-label>
                     </ng-template>
                     <textarea formControlName="message" type="text" matInput></textarea>
-                    <button type="submit" [disabled]="!messageForm.valid || !currentCon" mat-raised-button color="primary">发送</button>
+                    <button type="submit" [disabled]="!messageForm.valid || !rongSer.currentCon" mat-raised-button color="primary">发送</button>
                 </mat-form-field>
             </form>
         </div>

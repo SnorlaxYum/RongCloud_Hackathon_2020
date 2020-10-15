@@ -38,11 +38,6 @@ export class SingleChatComponent implements OnInit {
   }
   conveInput: string
   // im = RongIMLib.init(this.rongConfig)
-  conversationList = []
-  currentCon: conversation = {
-    targetId: ''
-  }
-  currentConMessages = []
   messageForm = this.fb.group({
     message: this.fb.control('')
   })
@@ -52,28 +47,6 @@ export class SingleChatComponent implements OnInit {
   init = true
 
   constructor(private route: ActivatedRoute, private router: Router, private accSer: AcccountManagementService, public rongSer: RongCloudService, private fb: FormBuilder, private store: Store, private appRef: ApplicationRef, private snackbar: MatSnackBar, public dialog: MatDialog) { }
-
-  getCurMessages() {
-    var that = this
-    if (this.currentCon['targetId'] && this.currentCon['targetId'].length) {
-      this.rongSer.getConversationMessages({targetId: this.currentCon['targetId']}).subscribe(res => {
-        new Promise(resolve => {
-          that.currentConMessages = res['messages']
-          resolve(that.currentConMessages.reverse())
-        }).then(() => {
-          setTimeout(() => {
-            if (this.init && document.getElementById('unReadSep')) {
-              document.querySelector('.conversationList').scrollTop = document.getElementById('unReadSep').scrollHeight
-              this.init = false
-            } else {
-              document.querySelector('.conversationList').scrollTop = document.querySelector('.conversationList').scrollHeight
-            }
-          }, 100)
-        })
-        
-      })
-    }
-  }
 
   getTargetInfo = (userId: string) => this.rongSer.finalTargetInfos && this.rongSer.finalTargetInfos[userId] ? this.rongSer.finalTargetInfos[userId] : this.route.params['_value']['chat'] == userId ? {userId: this.route.params['_value']['chat'], nickname: this.route.params['_value']['chatnick'], portraitUri: this.route.params['_value']['chatpor'], relation: this.route.params['_value']['chatrel']} : {}
 
@@ -89,7 +62,7 @@ export class SingleChatComponent implements OnInit {
       this.currentScreen = this.route.params['_value']['chat'] ? 'con' : 'list'
     }
     if (this.route.params['_value']['chat']) {
-      this.currentCon['targetId'] = this.route.params['_value']['chat']
+      this.rongSer.currentCon['targetId'] = this.route.params['_value']['chat']
       this.rongSer.finalTargetInfos[this.route.params['_value']['chat']] = {userId: this.route.params['_value']['chat'], nickname: this.route.params['_value']['chatnick'], portraitUri: this.route.params['_value']['chatpor'], relation: this.route.params['_value']['chatrel']}
     }
     this.finalUserInfo().then(info => {
@@ -102,10 +75,10 @@ export class SingleChatComponent implements OnInit {
             console.log('链接成功, 链接用户 id 为: ', user.id)
             that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
             console.log('获取会话列表成功', that.rongSer.conversationList)
-            that.getCurMessages()
+            that.rongSer.getCurMessages()
           }).catch(function(error) {
             console.log('链接失败: ', error.code, error.msg);
-            that.getCurMessages()
+            that.rongSer.getCurMessages()
           })
         } else {
             if (this.accSer.loggedOut) {
@@ -116,16 +89,16 @@ export class SingleChatComponent implements OnInit {
                   console.log('链接成功, 链接用户 id 为: ', user.id)
                   that.store.dispatch({ type: 'Logging into Rongcloud IM success' })
                   console.log('获取会话列表成功', that.rongSer.conversationList)
-                  that.getCurMessages()
+                  that.rongSer.getCurMessages()
                   that.accSer.loggedOut = false
                 }).catch(function(error) {
                   console.log('链接失败: ', error.code, error.msg)
-                  that.getCurMessages()
+                  that.rongSer.getCurMessages()
                 })
               })
             } else {
               console.log('获取会话列表成功', this.rongSer.conversationList)
-              this.getCurMessages()
+              this.rongSer.getCurMessages()
             }
         }
       })
@@ -139,10 +112,10 @@ export class SingleChatComponent implements OnInit {
         var that = this
         function send(onerr) {
           var conversation = that.rongSer.im.Conversation.get({
-            targetId: that.currentCon['targetId'],
+            targetId: that.rongSer.currentCon['targetId'],
             type: RongIMLib.CONVERSATION_TYPE.PRIVATE
           });
-          if ((that.rongSer.finalTargetInfos && that.rongSer.finalTargetInfos[that.currentCon['targetId']] && that.rongSer.finalTargetInfos[that.currentCon['targetId']]['relation'] == 1) || that.getTargetInfo(that.currentCon['targetId'])['relation'] == 1) {
+          if ((that.rongSer.finalTargetInfos && that.rongSer.finalTargetInfos[that.rongSer.currentCon['targetId']] && that.rongSer.finalTargetInfos[that.rongSer.currentCon['targetId']]['relation'] == 1) || that.getTargetInfo(that.rongSer.currentCon['targetId'])['relation'] == 1) {
             conversation.send({
               messageType: 's:person',
               content: {content: that.messageForm.value['message']}
@@ -152,7 +125,7 @@ export class SingleChatComponent implements OnInit {
                   that.openSnackBar("信息发送成功")
                   console.log("信息发送成功，", message)
                   that.picNum = 0
-                  that.getCurMessages()
+                  that.rongSer.getCurMessages()
 
                   that.messageForm.reset({message: ''})
                   that.messageForm.markAsPristine()
@@ -254,12 +227,12 @@ export class SingleChatComponent implements OnInit {
   countForBadge = num => num >= 1000000 ? `${num/1000000}m` : num >= 1000 ? `${num/1000}k` : num
 
   changeCurCon(i: number) {
-    this.currentCon = this.rongSer.conversationList[i]
-    this.rongSer.read(this.currentCon)
+    this.rongSer.currentCon = this.rongSer.conversationList[i]
+    this.rongSer.read(this.rongSer.currentCon)
     if (screen.width <= 800) {
       this.currentScreen = 'con'
     }
-    this.getCurMessages()
+    this.rongSer.getCurMessages()
   }
 
   backToList() {
@@ -288,7 +261,7 @@ export class SingleChatComponent implements OnInit {
         if (res['status'] == "success") {
           console.log("撤回成功", message)
           that.openSnackBar("消息撤回成功")
-          that.getCurMessages()
+          that.rongSer.getCurMessages()
         }
       })
     }, err => {
@@ -309,15 +282,15 @@ export class SingleChatComponent implements OnInit {
         this.messageForm.reset({message: ''})
         this.messageForm.markAsPristine()
         this.messageForm.markAsUntouched()
-        if (mes.messageUId == this.currentCon.latestMessage.messageUId) {
-          this.currentCon.latestMessage.content = mes.content
-          this.rongSer.updateConversation([this.currentCon]).subscribe(res => {
+        if (mes.messageUId == this.rongSer.currentCon.latestMessage.messageUId) {
+          this.rongSer.currentCon.latestMessage.content = mes.content
+          this.rongSer.updateConversation([this.rongSer.currentCon]).subscribe(res => {
             if (res['status'] == 'success') {
-              this.getCurMessages()
+              this.rongSer.getCurMessages()
             }
           })
         } else {
-          this.getCurMessages()
+          this.rongSer.getCurMessages()
         }
       }
     })
