@@ -46,8 +46,9 @@ export class SingleChatComponent implements OnInit {
   messageForm = this.fb.group({
     message: this.fb.control('')
   })
-  picNum: number
+  picNum: number = 0
   currentScreen: string = 'both'
+  uploading: boolean
 
   constructor(private route: ActivatedRoute, private router: Router, private accSer: AcccountManagementService, public rongSer: RongCloudService, private fb: FormBuilder, private store: Store, private appRef: ApplicationRef, private snackbar: MatSnackBar, public dialog: MatDialog) { }
 
@@ -174,6 +175,7 @@ export class SingleChatComponent implements OnInit {
 
       dialogRef.afterClosed().subscribe(res => {
         if (res) {
+          this.uploading = true
           this.accSer.uploadFile(res).subscribe(result => {
             if (result['status']) {
               switch (result['status']) {
@@ -186,6 +188,7 @@ export class SingleChatComponent implements OnInit {
                   this.openSnackBar('上传失败')
                   break
               }
+              this.uploading = false
             }
           })
         }

@@ -55,9 +55,12 @@
             </ng-template>            
         </div>
         <div>
-            <button mat-icon-button (click)="uploadPic()">
-                <mat-icon>insert_photo</mat-icon>
-            </button>
+            <mat-spinner class="uploadPendingButton" *ngIf="uploading else upButton"></mat-spinner>
+            <ng-template #upButton>
+                <button mat-icon-button (click)="uploadPic()">
+                    <mat-icon>insert_photo</mat-icon>
+                </button>
+            </ng-template>
             <form [formGroup]="messageForm" (ngSubmit)="onSub()" class="messageForm" (keydown)="keyDownForm($event)">
                 <mat-form-field>
                     <mat-label *ngIf="editToggle else enterField">编辑消息（Ctrl+Enter发送，支持Markdown）</mat-label>

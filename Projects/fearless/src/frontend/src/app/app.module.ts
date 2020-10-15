@@ -32,6 +32,7 @@ import {MatBadgeModule} from '@angular/material/badge';
 import { MatDialogModule } from '@angular/material/dialog'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material/snack-bar'
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; 
 import { UploadFileComponent } from './upload-file/upload-file.component';
 
 @NgModule({
@@ -79,7 +80,8 @@ import { UploadFileComponent } from './upload-file/upload-file.component';
     MatListModule,
     MatBadgeModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ],
   providers: [],
   bootstrap: [AppComponent]
