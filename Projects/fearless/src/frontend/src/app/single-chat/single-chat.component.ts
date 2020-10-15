@@ -49,6 +49,7 @@ export class SingleChatComponent implements OnInit {
   picNum: number = 0
   currentScreen: string = 'both'
   uploading: boolean
+  init = true
 
   constructor(private route: ActivatedRoute, private router: Router, private accSer: AcccountManagementService, public rongSer: RongCloudService, private fb: FormBuilder, private store: Store, private appRef: ApplicationRef, private snackbar: MatSnackBar, public dialog: MatDialog) { }
 
@@ -61,8 +62,9 @@ export class SingleChatComponent implements OnInit {
           resolve(that.currentConMessages.reverse())
         }).then(() => {
           setTimeout(() => {
-            if (document.getElementById('unReadSep')) {
+            if (this.init && document.getElementById('unReadSep')) {
               document.querySelector('.conversationList').scrollTop = document.getElementById('unReadSep').scrollHeight
+              this.init = false
             } else {
               document.querySelector('.conversationList').scrollTop = document.querySelector('.conversationList').scrollHeight
             }

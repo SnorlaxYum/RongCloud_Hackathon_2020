@@ -88,12 +88,9 @@ func readConversation(w http.ResponseWriter, r *http.Request) {
 	err := session.getSessionFromRequest(r)
 	checkErr(err)
 	conv := conversation{}
+	conv.SenderUserID = session.userinDB
 	json.NewDecoder(r.Body).Decode(&conv)
-	if conv.SenderUserID == session.userinDB {
-		conv.read()
-	} else {
-		err = fmt.Errorf(`you are not the user`)
-	}
+	err = conv.read()
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"status": "error", "errorText": err.Error()})
