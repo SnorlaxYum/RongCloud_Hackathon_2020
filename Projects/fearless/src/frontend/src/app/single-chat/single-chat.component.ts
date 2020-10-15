@@ -86,7 +86,7 @@ export class SingleChatComponent implements OnInit {
   ngOnInit() {
     this.appRef.components[0].instance.setTitle('聊天')
     if (screen.width <= 800) {
-      this.currentScreen = 'list'
+      this.currentScreen = this.route.params['_value']['chat'] ? 'con' : 'list'
     }
     if (this.route.params['_value']['chat']) {
       this.currentCon['targetId'] = this.route.params['_value']['chat']
